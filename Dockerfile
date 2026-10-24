@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine3.24 AS builder
+FROM golang:1.27-alpine3.24 AS builder
 
 LABEL stage=gobuilder
 
@@ -16,25 +16,25 @@ ARG TARGETPLATFORM
 # build and using UPX to compress
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then ARCHITECTURE=amd64; elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then ARCHITECTURE=arm; elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then ARCHITECTURE=arm64; else ARCHITECTURE=amd64; fi \
     && CGO_ENABLED=0 GOARCH=${ARCHITECTURE} GOOS=linux go build -tags nomsgpack -ldflags="-s -w" -a -o dedao-dl . \
-    && wget https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-${ARCHITECTURE}_linux.tar.xz \
-    && tar -xvf upx-4.2.4-${ARCHITECTURE}_linux.tar.xz \
-    && cd upx-4.2.4-${ARCHITECTURE}_linux \
+    && wget https://github.com/upx/upx/releases/download/v5.2.1/upx-5.2.1-${ARCHITECTURE}_linux.tar.xz \
+    && tar -xvf upx-5.2.1-${ARCHITECTURE}_linux.tar.xz \
+    && cd upx-5.2.1-${ARCHITECTURE}_linux \
     && chmod a+x ./upx \
     && mv ./upx /usr/local/bin/ \
-    && cd ../ && rm -rf upx-4.2.4-${ARCHITECTURE}_linux && rm -rf upx-4.2.4-${ARCHITECTURE}_linux.tar.xz \
+    && cd ../ && rm -rf upx-5.2.1-${ARCHITECTURE}_linux && rm -rf upx-5.2.1-${ARCHITECTURE}_linux.tar.xz \
     && cd /build \
     && upx dedao-dl \
     && chmod a+x ./dedao-dl
 
-FROM alpine:3.21
+FROM alpine:3.24
 
 # Installs latest ffmpeg and chinese font.
-RUN echo @3.21 https://mirrors.aliyun.com/alpine/v3.21/community > /etc/apk/repositories \
-    && echo @3.21 https://mirrors.aliyun.com/alpine/v3.21/main >> /etc/apk/repositories \
+RUN echo @3.24 https://mirrors.aliyun.com/alpine/v3.24/community > /etc/apk/repositories \
+    && echo @3.24 https://mirrors.aliyun.com/alpine/v3.24/main >> /etc/apk/repositories \
     && apk update \
-    && apk add --no-cache ffmpeg@3.21 tzdata@3.21 \
-    && apk add --no-cache --allow-untrusted harfbuzz@3.21 nss@3.21 freetype@3.21 \
-    ttf-freefont@3.21 wqy-zenhei@3.21 \
+    && apk add --no-cache ffmpeg@3.24 tzdata@3.24 \
+    && apk add --no-cache --allow-untrusted harfbuzz@3.24 nss@3.24 freetype@3.24 \
+    ttf-freefont@3.24 wqy-zenhei@3.24 \
     && cp -r -f /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && rm -rf /var/cache/apk/*
 
