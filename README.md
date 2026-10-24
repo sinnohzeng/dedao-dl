@@ -96,7 +96,7 @@ Web 页面功能（随版本迭代可能略有调整）：
 
 ### 使用 `go` 安装
 
-安装go，版本需大于1.26，并设置GOPATH环境变量, 并在PATH中添加$GOPATH/bin
+安装go，版本需大于1.27，并设置GOPATH环境变量, 并在PATH中添加$GOPATH/bin
 
 使用如下命令安装：
 
