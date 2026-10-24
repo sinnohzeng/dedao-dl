@@ -1,4 +1,4 @@
-import { type ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table"
+import { type ColumnDef, flexRender, tableFeatures, useTable } from "@tanstack/react-table"
 import {
   BookMarked,
   Compass,
@@ -142,6 +142,9 @@ const DOWNLOAD_OPTIONS: Record<Exclude<ManageTabKey, "compass">, DownloadOption[
 }
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50]
+
+// 表格只用核心行模型，不启用排序、筛选等附加功能；放在组件外保证引用稳定
+const tableFeatureSet = tableFeatures({})
 
 function ensureAllFilter(options: PurchasedNavbarChild[]) {
   if (options.some((item) => item.filter === "all")) {
@@ -623,7 +626,7 @@ export function PurchasedManagePage() {
     }
   }
 
-  const columns = useMemo<ColumnDef<CourseListItem>[]>(
+  const columns = useMemo<ColumnDef<typeof tableFeatureSet, CourseListItem>[]>(
     () => [
       {
         id: "content",
@@ -795,10 +798,10 @@ export function PurchasedManagePage() {
     [activeTab, navigate, playingEnid],
   )
 
-  const table = useReactTable({
+  const table = useTable({
+    features: tableFeatureSet,
     data: items,
     columns,
-    getCoreRowModel: getCoreRowModel(),
   })
 
   return (
@@ -932,7 +935,7 @@ export function PurchasedManagePage() {
                 <TableBody>
                   {table.getRowModel().rows.map((row) => (
                     <TableRow key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
+                      {row.getAllCells().map((cell) => (
                         <TableCell className="align-top" key={cell.id}>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </TableCell>

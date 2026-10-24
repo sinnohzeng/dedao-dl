@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-var __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
     plugins: [react(), tailwindcss()],
     resolve: {
@@ -25,7 +25,7 @@ export default defineConfig({
         emptyOutDir: true,
         rollupOptions: {
             output: {
-                manualChunks: function (id) {
+                manualChunks(id) {
                     // Keep chunking coarse-grained: isolate the heaviest markdown stack,
                     // then split framework/runtime and UI libraries into stable vendor bundles.
                     if (id.includes("react-markdown") ||
