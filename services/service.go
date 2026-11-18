@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/yann0917/dedao-dl/utils"
@@ -20,7 +21,7 @@ var (
 		Host:   "dedao.cn",
 	}
 	baseURL   = "https://www.dedao.cn"
-	UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+	UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36"
 )
 
 // Response dedao success response
@@ -113,6 +114,7 @@ func NewService(co *CookieOptions) *Service {
 	})
 	client := resty.New()
 	client.SetDebug(false)
+	client.SetTimeout(60 * time.Second)
 	client.SetBaseURL(baseURL).
 		SetCookies(cookies).
 		SetHeader("User-Agent", UserAgent)
