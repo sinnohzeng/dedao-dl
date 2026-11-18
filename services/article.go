@@ -361,8 +361,13 @@ type ArticleComment struct {
 
 // ArticleList get class article list
 func (s *Service) ArticleList(id, chapterID string, maxID int) (list *ArticleList, err error) {
+	return s.ArticleListPage(id, chapterID, maxID, false)
+}
 
-	body, err := s.reqArticleList(id, chapterID, maxID)
+// ArticleListPage get one page of the article list; reverse walks from the newest lecture.
+func (s *Service) ArticleListPage(id, chapterID string, maxID int, reverse bool) (list *ArticleList, err error) {
+
+	body, err := s.reqArticleList(id, chapterID, maxID, reverse)
 	if err != nil {
 		return
 	}

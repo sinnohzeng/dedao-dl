@@ -3,7 +3,6 @@ package app
 import (
 	"errors"
 	"fmt"
-	"math"
 
 	"github.com/yann0917/dedao-dl/services"
 	"github.com/yann0917/dedao-dl/utils"
@@ -16,28 +15,7 @@ func ArticleList(id int, chapterID string) (list *services.ArticleList, err erro
 		return
 	}
 	enid := info.Enid
-	return ArticleListByEnId(enid, info.PublishNum, chapterID)
-}
-
-func ArticleListByEnId(enid string, count int, chapterID string) (list *services.ArticleList, err error) {
-	page := int(math.Ceil(float64(count) / 20.0))
-	maxID := 0
-	var lists []services.ArticleIntro
-	for i := 0; i < page; i++ {
-		list, err = getService().ArticleList(enid, chapterID, maxID)
-		if err != nil {
-			return
-		}
-		if len(list.List) > 0 {
-			maxID = list.List[len(list.List)-1].ID
-		}
-		lists = append(lists, list.List...)
-	}
-	if list == nil {
-		list = &services.ArticleList{}
-	}
-	list.List = lists
-	return
+	return ArticleListAllByEnId(enid, chapterID)
 }
 
 func ArticleListAllByEnId(enid, chapterID string) (list *services.ArticleList, err error) {
@@ -65,6 +43,52 @@ func ArticleListAllByEnId(enid, chapterID string) (list *services.ArticleList, e
 	}
 	list.List = lists
 	return
+}
+
+// courseArticles lists the whole course, or only the lecture aid when aid > 0.
+func courseArticles(enid string, aid int) (*services.ArticleList, error) {
+	if aid <= 0 {
+		return ArticleListAllByEnId(enid, "")
+	}
+	// New lectures sit at the end of the list, so walk it newest-first and stop at the match instead of
+	// listing the whole course for one lecture. A miss falls back to the full forward list.
+	hit, err := findArticle(func(maxID int) (*services.ArticleList, error) {
+		return getService().ArticleListPage(enid, "", maxID, true)
+	}, aid)
+	if err != nil || hit != nil {
+		return hit, err
+	}
+	return ArticleListAllByEnId(enid, "")
+}
+
+// findArticle pages with the max_id cursor until aid shows up, a page is empty, or a page brings no unseen id.
+func findArticle(page func(maxID int) (*services.ArticleList, error), aid int) (*services.ArticleList, error) {
+	seen := map[int]bool{}
+	maxID := 0
+	for {
+		list, err := page(maxID)
+		if err != nil {
+			return nil, err
+		}
+		if list == nil || len(list.List) == 0 {
+			return nil, nil
+		}
+		fresh := false
+		for _, a := range list.List {
+			if a.ID == aid {
+				list.List = []services.ArticleIntro{a}
+				return list, nil
+			}
+			if !seen[a.ID] {
+				seen[a.ID] = true
+				fresh = true
+			}
+		}
+		if !fresh {
+			return nil, nil
+		}
+		maxID = list.List[len(list.List)-1].ID
+	}
 }
 
 func ArticleDetailByEnId(articleEnid string) (detail *services.ArticleDetail, err error) {

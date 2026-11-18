@@ -70,13 +70,7 @@ func (d *CourseDownload) Download() error {
 
 	switch d.DownloadType {
 	case 1: // mp3
-		enid := course.ClassInfo.Enid
-		count := course.ClassInfo.CurrentArticleCount
-		if count == 0 {
-			count = course.ClassInfo.PhaseNum
-		}
-
-		articles, err := ArticleListByEnId(enid, count, "")
+		articles, err := courseArticles(course.ClassInfo.Enid, d.AID)
 		if err != nil {
 			return err
 		}
@@ -800,12 +794,7 @@ func courseArticleDetailByEnid(articleEnid string) (detail *services.ArticleDeta
 }
 
 func DownloadMarkdownCourse(d *CourseDownload, course *services.CourseInfo, path string) error {
-	enid := course.ClassInfo.Enid
-	count := course.ClassInfo.CurrentArticleCount
-	if count == 0 {
-		count = course.ClassInfo.PhaseNum
-	}
-	list, err := ArticleListByEnId(enid, count, "")
+	list, err := courseArticles(course.ClassInfo.Enid, d.AID)
 	if err != nil {
 		return err
 	}
@@ -896,12 +885,7 @@ func DownloadMarkdownCourse(d *CourseDownload, course *services.CourseInfo, path
 }
 
 func DownloadPdfCourse(d *CourseDownload, course *services.CourseInfo, path string) error {
-	enid := course.ClassInfo.Enid
-	count := course.ClassInfo.CurrentArticleCount
-	if count == 0 {
-		count = course.ClassInfo.PhaseNum
-	}
-	list, err := ArticleListByEnId(enid, count, "")
+	list, err := courseArticles(course.ClassInfo.Enid, d.AID)
 	if err != nil {
 		return err
 	}

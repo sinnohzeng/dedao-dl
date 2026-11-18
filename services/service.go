@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -118,6 +119,13 @@ func NewService(co *CookieOptions) *Service {
 	client.SetBaseURL(baseURL).
 		SetCookies(cookies).
 		SetHeader("User-Agent", UserAgent)
+	if os.Getenv("DEDAO_DL_TRACE") != "" {
+		// One stderr line per API response, for counting requests; never set it where stdout is parsed as JSON together with stderr.
+		client.OnAfterResponse(func(_ *resty.Client, r *resty.Response) error {
+			fmt.Fprintf(os.Stderr, "TRACE %s %d\n", r.Request.RawRequest.URL.Path, r.StatusCode())
+			return nil
+		})
+	}
 
 	return &Service{client: client}
 }
